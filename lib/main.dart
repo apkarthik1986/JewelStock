@@ -1203,6 +1203,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               children: [
                 Expanded(
                   child: TextField(
+                    key: const Key('item_weight_field'),
                     controller: weightController,
                     decoration: const InputDecoration(
                       labelText: 'Weight (gm)',
@@ -1227,6 +1228,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
+                    key: const Key('item_wastage_field'),
                     controller: wastageController,
                     decoration: InputDecoration(
                       labelText: 'Wastage (gm)',
@@ -1604,6 +1606,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 Expanded(
                   flex: 1,
                   child: TextField(
+                    key: const Key('exchange_weight_field'),
                     controller: exchangeWeightController,
                     decoration: const InputDecoration(
                       labelText: 'Weight (gm)',
