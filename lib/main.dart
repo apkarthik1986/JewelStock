@@ -1057,7 +1057,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                           ],
                         ),
                         Text('Weight: ${item.weightGm.toStringAsFixed(3)}gm | Net: ${item.netWeightGm.toStringAsFixed(3)}gm'),
-                        Text('Wastage: ${item.wastageGm.toStringAsFixed(3)}gm (${((item.wastageGm / item.weightGm) * 100).toStringAsFixed(2)}%)'),
+                        Text('Wastage: ${item.wastageGm.toStringAsFixed(3)}gm${item.weightGm > 0 ? ' (${((item.wastageGm / item.weightGm) * 100).toStringAsFixed(2)}%)' : ''}'),
                         Text('Making Charges: ₹${item.makingCharges.toStringAsFixed(2)}'),
                         Text('CGST 1.5%: ₹${item.cgst.toStringAsFixed(2)} | SGST 1.5%: ₹${item.sgst.toStringAsFixed(2)}'),
                         const SizedBox(height: 4),
@@ -1216,7 +1216,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       labelText: 'Wastage (gm)',
                       border: const OutlineInputBorder(),
                       hintText: wastageGm.toStringAsFixed(3),
-                      helperText: wastageGm > 0 
+                      helperText: wastageGm > 0 && weightGm > 0
                           ? '${((wastageGm / weightGm) * 100).toStringAsFixed(2)}% of weight'
                           : null,
                     ),
