@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'services/theme_service.dart';
 
 /// GST rate constant (1.5% each for CGST and SGST)
 const double kGstRate = 0.015;
@@ -14,7 +17,13 @@ const double kGstRate = 0.015;
 const double kSilverWastageDeductionRate = 0.30;
 
 void main() {
-  runApp(const JewelCalcApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const JewelCalcApp(),
+    ),
+  );
 }
 
 /// Represents a single jewellery item with all its calculation details
@@ -117,13 +126,15 @@ class JewelCalcApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jewel Calc',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
-        useMaterial3: true,
-      ),
-      home: const JewelCalcHome(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Jewel Calc',
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.themeData,
+          home: const JewelCalcHome(),
+        );
+      },
     );
   }
 }
@@ -937,7 +948,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -1005,6 +1015,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       return const SizedBox.shrink();
     }
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1016,13 +1029,16 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               children: [
                 Text(
                   'Added Items (${items.length})',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Total: ₹${itemsTotalWithGst.round()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    fontSize: 16,
+                    color: successColor,
                   ),
                 ),
               ],
@@ -1036,7 +1052,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 final item = items[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.grey.shade100,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
@@ -1063,7 +1079,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                         const SizedBox(height: 4),
                         Text(
                           'Item Total: ₹${item.itemTotalWithGst.round()}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: successColor),
                         ),
                       ],
                     ),
@@ -1719,6 +1735,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     color: Colors.orange.shade50,
+                    elevation: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
@@ -1730,17 +1747,20 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                               children: [
                                 Text(
                                   '${index + 1}. ${item.type}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                 ),
+                                const SizedBox(height: 4),
                                 Text('${item.weightGm.toStringAsFixed(3)}gm @ ₹${item.ratePerGram.toInt()}/gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)}gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)}gm'),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Value: - ₹${item.value.round()}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 15,
                                     color: Colors.orange,
                                   ),
                                 ),
@@ -1768,8 +1788,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget _buildFinalAmountSection() {
     final totalItemsCount = items.length + (weightGm > 0 ? 1 : 0);
     final amountWithGst = amountAfterDiscount + cgstAmount + sgstAmount;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+    
     return Card(
-      color: Colors.green.shade50,
+      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -1810,10 +1833,10 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 Text(totalExchangeValue > 0 ? '💰 Net Payable:' : '💰 Amount Incl. GST:',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('₹${finalAmount.round()}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green)),
+                        color: successColor)),
               ],
             ),
           ],
@@ -1913,6 +1936,46 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 controller: silverMcController,
                 onChanged: (value) {
                   silverMcPerGm = double.tryParse(value) ?? 0.0;
+                },
+              ),
+              const Divider(),
+              const Text('App Theme',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Consumer<ThemeProvider>(
+                builder: (builderContext, themeProvider, child) {
+                  return DropdownButtonFormField<AppTheme>(
+                    value: themeProvider.currentTheme,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        ThemeService.getThemeIcon(themeProvider.currentTheme),
+                        color: Theme.of(builderContext).colorScheme.primary,
+                      ),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: AppTheme.values.map((theme) {
+                      return DropdownMenuItem<AppTheme>(
+                        value: theme,
+                        child: Row(
+                          children: [
+                            Icon(
+                              ThemeService.getThemeIcon(theme),
+                              size: 20,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(ThemeService.getThemeName(theme)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (AppTheme? theme) {
+                      if (theme != null) {
+                        themeProvider.setTheme(theme);
+                      }
+                    },
+                  );
                 },
               ),
             ],
