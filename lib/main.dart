@@ -1015,6 +1015,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       return const SizedBox.shrink();
     }
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1026,13 +1029,16 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               children: [
                 Text(
                   'Added Items (${items.length})',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Total: ₹${itemsTotalWithGst.round()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    fontSize: 16,
+                    color: successColor,
                   ),
                 ),
               ],
@@ -1046,7 +1052,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 final item = items[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.grey.shade100,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
@@ -1073,7 +1079,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                         const SizedBox(height: 4),
                         Text(
                           'Item Total: ₹${item.itemTotalWithGst.round()}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: successColor),
                         ),
                       ],
                     ),
@@ -1729,6 +1735,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     color: Colors.orange.shade50,
+                    elevation: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
@@ -1740,17 +1747,20 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                               children: [
                                 Text(
                                   '${index + 1}. ${item.type}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                 ),
+                                const SizedBox(height: 4),
                                 Text('${item.weightGm.toStringAsFixed(3)}gm @ ₹${item.ratePerGram.toInt()}/gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)}gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)}gm'),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Value: - ₹${item.value.round()}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 15,
                                     color: Colors.orange,
                                   ),
                                 ),
@@ -1778,8 +1788,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget _buildFinalAmountSection() {
     final totalItemsCount = items.length + (weightGm > 0 ? 1 : 0);
     final amountWithGst = amountAfterDiscount + cgstAmount + sgstAmount;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+    
     return Card(
-      color: Colors.green.shade50,
+      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -1820,10 +1833,10 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 Text(totalExchangeValue > 0 ? '💰 Net Payable:' : '💰 Amount Incl. GST:',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('₹${finalAmount.round()}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green)),
+                        color: successColor)),
               ],
             ),
           ],
