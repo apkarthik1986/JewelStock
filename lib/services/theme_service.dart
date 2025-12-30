@@ -14,7 +14,8 @@ enum AppTheme {
 /// Service to manage app themes with colorful, modern designs
 class ThemeService {
   /// Common text theme to be used across all themes for consistency
-  static TextTheme get _baseTextTheme => GoogleFonts.poppinsTextTheme();
+  /// Cached to avoid repeated font loading operations
+  static final TextTheme _baseTextTheme = GoogleFonts.poppinsTextTheme();
   
   /// Get theme data based on the selected theme option
   static ThemeData getThemeData(AppTheme theme) {

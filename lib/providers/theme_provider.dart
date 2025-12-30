@@ -26,6 +26,7 @@ class ThemeProvider extends ChangeNotifier {
         notifyListeners();
       } catch (e) {
         // If theme not found, use default
+        debugPrint('Error loading theme: $e. Using default theme.');
         _currentTheme = AppTheme.gold;
       }
     }

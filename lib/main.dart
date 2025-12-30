@@ -1943,13 +1943,13 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Consumer<ThemeProvider>(
-                builder: (context, themeProvider, child) {
+                builder: (builderContext, themeProvider, child) {
                   return DropdownButtonFormField<AppTheme>(
                     value: themeProvider.currentTheme,
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         ThemeService.getThemeIcon(themeProvider.currentTheme),
-                        color: Theme.of(dialogContext).colorScheme.primary,
+                        color: Theme.of(builderContext).colorScheme.primary,
                       ),
                       border: const OutlineInputBorder(),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
