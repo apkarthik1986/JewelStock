@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'services/theme_service.dart';
 
 /// GST rate constant (1.5% each for CGST and SGST)
 const double kGstRate = 0.015;
@@ -14,7 +17,13 @@ const double kGstRate = 0.015;
 const double kSilverWastageDeductionRate = 0.30;
 
 void main() {
-  runApp(const JewelCalcApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const JewelCalcApp(),
+    ),
+  );
 }
 
 /// Represents a single jewellery item with all its calculation details
@@ -117,13 +126,15 @@ class JewelCalcApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jewel Calc',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
-        useMaterial3: true,
-      ),
-      home: const JewelCalcHome(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Jewel Calc',
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.themeData,
+          home: const JewelCalcHome(),
+        );
+      },
     );
   }
 }
@@ -937,7 +948,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -1913,6 +1923,46 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 controller: silverMcController,
                 onChanged: (value) {
                   silverMcPerGm = double.tryParse(value) ?? 0.0;
+                },
+              ),
+              const Divider(),
+              const Text('App Theme',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, child) {
+                  return DropdownButtonFormField<AppTheme>(
+                    value: themeProvider.currentTheme,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        ThemeService.getThemeIcon(themeProvider.currentTheme),
+                        color: Theme.of(dialogContext).colorScheme.primary,
+                      ),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: AppTheme.values.map((theme) {
+                      return DropdownMenuItem<AppTheme>(
+                        value: theme,
+                        child: Row(
+                          children: [
+                            Icon(
+                              ThemeService.getThemeIcon(theme),
+                              size: 20,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(ThemeService.getThemeName(theme)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (AppTheme? theme) {
+                      if (theme != null) {
+                        themeProvider.setTheme(theme);
+                      }
+                    },
+                  );
                 },
               ),
             ],
