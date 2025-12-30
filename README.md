@@ -8,6 +8,7 @@ A Flutter Android application for jewellery invoicing that can be built using Gi
 
 - **[How to Build APK](HOW_TO_BUILD_APK.md)** - **Start here!** Simple guide to build your APK
 - **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes
+- **[Theme System](THEME_SYSTEM.md)** - Learn about the colorful theming system
 - **[Detailed Building Instructions](BUILDING.md)** - Complete build guide
 - **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Fix common issues
 - **[GitHub Actions Workflows](.github/workflows/README.md)** - CI/CD documentation
@@ -25,7 +26,8 @@ A Flutter Android application for jewellery invoicing that can be built using Gi
 - **Customer Information**: Capture bill number, customer details, and contact information
 - **PDF Invoice Generation**: Generate professional invoices with thermal printer support
 - **Daily Persistence**: Base values persist throughout the day and automatically reset at midnight
-- **Material Design 3**: Clean, modern Android interface
+- **Beautiful Themes**: 6 colorful themes including Light, Dark, Ocean Blue, Emerald Green, Royal Purple, and Gold Elegance
+- **Material Design 3**: Clean, modern Android interface with Google Fonts
 - **Automated builds via GitHub Actions**
 - **Development environment ready in GitHub Codespaces**
 
@@ -39,6 +41,20 @@ A Flutter Android application for jewellery invoicing that can be built using Gi
 5. Tap **Save** to store your configuration
 
 **Note**: Base values persist throughout the day and automatically reset to zero at midnight.
+
+### Choose Your Theme
+1. Open the app and tap the **Settings** icon (⚙️) in the app bar
+2. Scroll down to the **App Theme** section
+3. Select from 6 beautiful themes:
+   - **Gold Elegance** (Default) - Warm gold theme perfect for jewellery
+   - **Light** - Clean, modern light theme
+   - **Dark** - Eye-friendly dark theme
+   - **Ocean Blue** - Vibrant cyan/blue theme
+   - **Emerald Green** - Fresh green theme
+   - **Royal Purple** - Elegant purple theme
+4. Theme changes instantly and persists across app restarts
+
+For more details, see [THEME_SYSTEM.md](THEME_SYSTEM.md).
 
 ### Create an Estimate
 
