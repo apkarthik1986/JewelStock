@@ -1845,7 +1845,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       decoration: InputDecoration(
                         labelText: '$type Rate',
                         border: const OutlineInputBorder(),
-                        hintText: 'e.g., 6500',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: false),
                       controller: metalRateControllers[type],
@@ -1864,7 +1863,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 decoration: const InputDecoration(
                   labelText: 'Gold Wastage (%)',
                   border: OutlineInputBorder(),
-                  hintText: 'e.g., 10',
                 ),
                 keyboardType: TextInputType.number,
                 controller: goldWastageController,
@@ -1877,7 +1875,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 decoration: const InputDecoration(
                   labelText: 'Silver Wastage (%)',
                   border: OutlineInputBorder(),
-                  hintText: 'e.g., 8',
                 ),
                 keyboardType: TextInputType.number,
                 controller: silverWastageController,
@@ -1894,7 +1891,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 decoration: const InputDecoration(
                   labelText: 'Gold MC (₹ per gram)',
                   border: OutlineInputBorder(),
-                  hintText: 'e.g., 350',
                 ),
                 keyboardType: TextInputType.number,
                 controller: goldMcController,
@@ -1907,7 +1903,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 decoration: const InputDecoration(
                   labelText: 'Silver MC (₹ per gram)',
                   border: OutlineInputBorder(),
-                  hintText: 'e.g., 200',
                 ),
                 keyboardType: TextInputType.number,
                 controller: silverMcController,
