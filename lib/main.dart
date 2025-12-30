@@ -239,7 +239,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   void _updateSettingsControllers() {
     for (var entry in metalRates.entries) {
       metalRateControllers[entry.key]!.text =
-          entry.value == 0.0 ? '' : entry.value.toString();
+          entry.value == 0.0 ? '' : entry.value.toInt().toString();
     }
     goldWastageController.text =
         goldWastagePercentage == 0.0 ? '' : goldWastagePercentage.toString();
@@ -615,7 +615,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
         widgets.addAll([
           pw.Text('Item ${i + 1}: ${item.type}',
               style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Rate: Rs.${item.ratePerGram}/gm',
+          pw.Text('Rate: Rs.${item.ratePerGram.toInt()}/gm',
               style: const pw.TextStyle(fontSize: 14)),
           pw.Text('Weight: ${item.weightGm.toStringAsFixed(3)} gm',
               style: const pw.TextStyle(fontSize: 14)),
@@ -679,7 +679,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
         widgets.addAll([
           pw.Text('Item $itemNum: $selectedType',
               style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Rate: Rs.$ratePerGram/gm',
+          pw.Text('Rate: Rs.${ratePerGram.toInt()}/gm',
               style: const pw.TextStyle(fontSize: 14)),
           pw.Text('Weight: ${weightGm.toStringAsFixed(3)} gm',
               style: const pw.TextStyle(fontSize: 14)),
@@ -856,7 +856,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       pw.SizedBox(height: 4),
                       pw.Text('${item.type}',
                           style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('${item.weightGm.toStringAsFixed(3)} gm @ Rs.${item.ratePerGram.toStringAsFixed(2)}/gm',
+                      pw.Text('${item.weightGm.toStringAsFixed(3)} gm @ Rs.${item.ratePerGram.toInt()}/gm',
                           style: const pw.TextStyle(fontSize: 12)),
                       if (item.wastageDeductionGm > 0)
                         pw.Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)} gm',
@@ -880,7 +880,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                     pw.SizedBox(height: 4),
                     pw.Text('$exchangeType',
                         style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('${exchangeWeight.toStringAsFixed(3)} gm @ Rs.${exchangeRate.toStringAsFixed(2)}/gm',
+                    pw.Text('${exchangeWeight.toStringAsFixed(3)} gm @ Rs.${exchangeRate.toInt()}/gm',
                         style: const pw.TextStyle(fontSize: 12)),
                     if (exchangeWastageDeduction > 0)
                       pw.Text('Wastage Deduction: ${exchangeWastageDeduction.toStringAsFixed(3)} gm',
@@ -1057,7 +1057,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                           ],
                         ),
                         Text('Weight: ${item.weightGm.toStringAsFixed(3)}gm | Net: ${item.netWeightGm.toStringAsFixed(3)}gm'),
-                        Text('Wastage: ${item.wastageGm.toStringAsFixed(3)}gm'),
+                        Text('Wastage: ${item.wastageGm.toStringAsFixed(3)}gm${item.weightGm > 0 ? ' (${((item.wastageGm / item.weightGm) * 100).toStringAsFixed(2)}%)' : ''}'),
                         Text('Making Charges: ₹${item.makingCharges.toStringAsFixed(2)}'),
                         Text('CGST 1.5%: ₹${item.cgst.toStringAsFixed(2)} | SGST 1.5%: ₹${item.sgst.toStringAsFixed(2)}'),
                         const SizedBox(height: 4),
@@ -1178,7 +1178,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '📌 Current Rate: ₹${ratePerGram.toStringAsFixed(2)} per gram',
+                '📌 Current Rate: ₹${ratePerGram.toInt()} per gram',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -1216,6 +1216,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       labelText: 'Wastage (gm)',
                       border: const OutlineInputBorder(),
                       hintText: wastageGm.toStringAsFixed(3),
+                      helperText: wastageGm > 0 && weightGm > 0
+                          ? '${((wastageGm / weightGm) * 100).toStringAsFixed(2)}% of weight'
+                          : null,
                     ),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -1643,7 +1646,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Rate:'),
-                        Text('₹${exchangeRate.toStringAsFixed(2)}/gm'),
+                        Text('₹${exchangeRate.toInt()}/gm'),
                       ],
                     ),
                     if (exchangeWastageDeduction > 0) ...[
@@ -1729,7 +1732,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                                   '${index + 1}. ${item.type}',
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                                Text('${item.weightGm.toStringAsFixed(3)}gm @ ₹${item.ratePerGram.toStringAsFixed(2)}/gm'),
+                                Text('${item.weightGm.toStringAsFixed(3)}gm @ ₹${item.ratePerGram.toInt()}/gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)}gm'),
                                 if (item.wastageDeductionGm > 0)
@@ -1844,10 +1847,12 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                         border: const OutlineInputBorder(),
                         hintText: 'e.g., 6500',
                       ),
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: false),
                       controller: metalRateControllers[type],
                       onChanged: (value) {
-                        metalRates[type] = double.tryParse(value) ?? 0.0;
+                        // Parse as integer, then convert to double for storage
+                        final intValue = int.tryParse(value);
+                        metalRates[type] = intValue != null ? intValue.toDouble() : 0.0;
                       },
                     ),
                   )),
