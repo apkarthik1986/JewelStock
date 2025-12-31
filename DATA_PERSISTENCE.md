@@ -20,7 +20,7 @@ The application uses `SharedPreferences` for local data storage, which provides:
 All data in the application persists indefinitely across app sessions until manually cleared by the user:
 
 **Base Values:**
-- Metal rates per gram (Gold 22K/916, Gold 20K/833, Gold 18K/750, Silver)
+- Metal rates per gram (Gold 22K/916, Gold 20K/833, Gold 18K/750, Gold Coin 24K/999, Silver)
 - Gold wastage percentage
 - Silver wastage percentage
 - Gold making charge per gram

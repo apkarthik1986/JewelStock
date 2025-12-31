@@ -18,7 +18,7 @@ A Flutter Android application for jewellery invoicing that can be built using Gi
 ## 💎 Features
 
 ### Jewellery Invoicing Application
-- **Multiple Gold Types Support**: Calculate for Gold 22K/916, 20K/833, 18K/750, and Silver
+- **Multiple Gold Types Support**: Calculate for Gold 22K/916, 20K/833, 18K/750, Gold Coin 24K/999, and Silver
 - **Separate Wastage Settings**: Different wastage percentages for gold and silver
 - **Real-time Calculations**: Automatic calculation of jewellery amounts, making charges, and GST
 - **Discount Options**: Apply discounts in rupees or percentage
@@ -63,7 +63,7 @@ For more details, see [THEME_SYSTEM.md](THEME_SYSTEM.md).
 - Fill in bill number, account number, customer name, address, and mobile number
 
 #### Step 2: Calculate Item Details
-1. **Select Type**: Choose from Gold 22K/916, 20K/833, 18K/750, or Silver
+1. **Select Type**: Choose from Gold 22K/916, 20K/833, 18K/750, Gold Coin 24K/999, or Silver
 2. **Enter Weight**: Input the gross weight in grams
 3. **Enter Wastage**: Wastage is auto-calculated based on settings (can be adjusted)
 4. **Review Net Weight**: Automatically calculated (Weight + Wastage)
@@ -206,6 +206,7 @@ MyFlutter/
 - Gold 22K/916: ₹0/gram (configurable in settings)
 - Gold 20K/833: ₹0/gram (configurable in settings)
 - Gold 18K/750: ₹0/gram (configurable in settings)
+- Gold Coin 24K/999: ₹0/gram (configurable in settings)
 - Silver: ₹0/gram (configurable in settings)
 - Gold Wastage: 0% (configurable in settings)
 - Silver Wastage: 0% (configurable in settings)
