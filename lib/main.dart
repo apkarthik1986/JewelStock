@@ -753,7 +753,10 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
           pw.Page(
             pageFormat: format.copyWith(
               width: 80 * PdfPageFormat.mm,
-              marginAll: 10,
+              marginLeft: 10,
+              marginTop: 10,
+              marginRight: 10,
+              marginBottom: 10,
             ),
             build: (context) {
               return pw.Column(
