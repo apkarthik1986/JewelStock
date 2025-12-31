@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:myflutter/main.dart';
+import 'package:myflutter/providers/theme_provider.dart';
 
 /// Scroll offset used to navigate to the Exchange section.
 /// This value is calibrated to scroll past the Item Calculation and
 /// Amount Calculation sections to reach the Exchange section.
 const Offset kScrollToExchangeOffset = Offset(0, -500);
 
+/// Helper function to wrap JewelCalcApp with necessary providers for testing
+Widget createTestApp() {
+  return ChangeNotifierProvider(
+    create: (context) => ThemeProvider(),
+    child: const JewelCalcApp(),
+  );
+}
+
 void main() {
   testWidgets('Jewel Calc app smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Verify that our app has the correct title
     expect(find.text('💎 Jewel Calc 💎'), findsOneWidget);
@@ -32,7 +42,7 @@ void main() {
   });
 
   testWidgets('Settings dialog opens', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Tap the settings icon
     await tester.tap(find.byIcon(Icons.settings));
@@ -46,7 +56,7 @@ void main() {
   });
 
   testWidgets('Print button exists', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Verify that Print button exists (not Download PDF)
     expect(find.text('Print'), findsOneWidget);
@@ -55,10 +65,10 @@ void main() {
   });
 
   testWidgets('Reset button clears all inputs', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
-    // Find and enter text in the weight field (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    // Find and enter text in the weight field using Key
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.tap(weightField);
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
@@ -76,7 +86,7 @@ void main() {
   });
 
   testWidgets('Reset to Defaults keeps settings dialog open', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Open settings dialog
     await tester.tap(find.byIcon(Icons.settings));
@@ -96,7 +106,7 @@ void main() {
   });
 
   testWidgets('Wastage field shows calculated value', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Open settings to set wastage percentage
     await tester.tap(find.byIcon(Icons.settings));
@@ -112,17 +122,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter weight (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
 
     // Verify wastage field is populated with calculated value (10 * 10% = 1.000)
-    final wastageField = tester.widget<TextField>(find.widgetWithText(TextField, 'Wastage (gm)'));
+    final wastageField = tester.widget<TextField>(find.byKey(const Key('item_wastage_field')));
     expect(wastageField.controller?.text, '1.000');
   });
 
   testWidgets('Add Item button exists and is initially disabled', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Verify that Add Item to List button exists
     expect(find.text('Add Item to List'), findsOneWidget);
@@ -139,10 +149,10 @@ void main() {
   });
 
   testWidgets('Add Item button becomes enabled when weight is entered', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Enter weight (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
 
@@ -157,13 +167,13 @@ void main() {
   });
 
   testWidgets('Adding item shows items list section', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Initially, Added Items section should not exist
     expect(find.textContaining('Added Items'), findsNothing);
 
     // Enter weight (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
 
@@ -182,10 +192,10 @@ void main() {
   });
 
   testWidgets('Removing item hides items list when empty', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Enter weight and add item (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
 
@@ -211,10 +221,10 @@ void main() {
   });
 
   testWidgets('Reset clears items list', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Enter weight and add item (use .first since there are two Weight fields)
-    final weightField = find.widgetWithText(TextField, 'Weight (gm)').first;
+    final weightField = find.byKey(const Key('item_weight_field'));
     await tester.enterText(weightField, '10');
     await tester.pumpAndSettle();
 
@@ -268,7 +278,7 @@ void main() {
   });
 
   testWidgets('Exchange section exists and supports all metal types', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Scroll to find the Exchange section using drag (use .first for explicit targeting)
     await tester.drag(find.byType(SingleChildScrollView).first, kScrollToExchangeOffset);
@@ -280,7 +290,7 @@ void main() {
   });
 
   testWidgets('Exchange shows value when weight is entered', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // First, set a gold rate in settings
     await tester.tap(find.byIcon(Icons.settings));
@@ -300,7 +310,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter exchange weight (use .last since there are two Weight fields)
-    final exchangeWeightField = find.widgetWithText(TextField, 'Weight (gm)').last;
+    final exchangeWeightField = find.byKey(const Key('exchange_weight_field'));
     await tester.enterText(exchangeWeightField, '5');
     await tester.pumpAndSettle();
 
@@ -310,14 +320,14 @@ void main() {
   });
 
   testWidgets('Reset clears exchange input', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Scroll to find the Exchange section (use .first for explicit targeting)
     await tester.drag(find.byType(SingleChildScrollView).first, kScrollToExchangeOffset);
     await tester.pumpAndSettle();
 
     // Enter exchange weight (use .last since there are two Weight fields)
-    final exchangeWeightField = find.widgetWithText(TextField, 'Weight (gm)').last;
+    final exchangeWeightField = find.byKey(const Key('exchange_weight_field'));
     await tester.enterText(exchangeWeightField, '5');
     await tester.pumpAndSettle();
 
@@ -331,7 +341,7 @@ void main() {
   });
 
   testWidgets('Add Exchange Item button exists and is initially disabled', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // Scroll to find the Exchange section
     await tester.drag(find.byType(SingleChildScrollView).first, kScrollToExchangeOffset);
@@ -351,7 +361,7 @@ void main() {
   });
 
   testWidgets('Can add multiple exchange items', (WidgetTester tester) async {
-    await tester.pumpWidget(const JewelCalcApp());
+    await tester.pumpWidget(createTestApp());
 
     // First, set a gold rate in settings
     await tester.tap(find.byIcon(Icons.settings));
@@ -371,7 +381,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Find the exchange weight field and ensure it's visible
-    final exchangeWeightField = find.widgetWithText(TextField, 'Weight (gm)').last;
+    final exchangeWeightField = find.byKey(const Key('exchange_weight_field'));
     await tester.ensureVisible(exchangeWeightField);
     await tester.pumpAndSettle();
 

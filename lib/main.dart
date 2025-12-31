@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
+import 'services/theme_service.dart';
 
 /// GST rate constant (1.5% each for CGST and SGST)
 const double kGstRate = 0.015;
@@ -14,7 +17,13 @@ const double kGstRate = 0.015;
 const double kSilverWastageDeductionRate = 0.30;
 
 void main() {
-  runApp(const JewelCalcApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const JewelCalcApp(),
+    ),
+  );
 }
 
 /// Represents a single jewellery item with all its calculation details
@@ -117,13 +126,15 @@ class JewelCalcApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Jewel Calc',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
-        useMaterial3: true,
-      ),
-      home: const JewelCalcHome(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Jewel Calc',
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.themeData,
+          home: const JewelCalcHome(),
+        );
+      },
     );
   }
 }
@@ -603,333 +614,338 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     // Save form state before printing to ensure data persists
     await _saveFormState();
     
-    final pdf = pw.Document();
-    
-    // Build list of item widgets for PDF
-    List<pw.Widget> _buildItemWidgets() {
-      List<pw.Widget> widgets = [];
-      
-      // Add saved items
-      for (int i = 0; i < items.length; i++) {
-        final item = items[i];
-        widgets.addAll([
-          pw.Text('Item ${i + 1}: ${item.type}',
-              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Rate: Rs.${item.ratePerGram.toInt()}/gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Weight: ${item.weightGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Wastage: ${item.wastageGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('J Amount:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${item.jAmount.round()}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Making Charges:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${item.makingCharges.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Sub Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.Text('Rs.${item.itemTotal.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('CGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${item.cgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('SGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${item.sgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Item Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.Text('Rs.${item.itemTotalWithGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            ],
-          ),
-          pw.SizedBox(height: 8),
-        ]);
-      }
-      
-      // Add current item if any weight entered
-      if (weightGm > 0) {
-        final itemNum = items.length + 1;
-        final currentAmountBeforeGst = jAmount + makingCharges;
-        final currentCgst = currentAmountBeforeGst * kGstRate;
-        final currentSgst = currentAmountBeforeGst * kGstRate;
-        final currentTotalWithGst = currentAmountBeforeGst + currentCgst + currentSgst;
-        widgets.addAll([
-          pw.Text('Item $itemNum: $selectedType',
-              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Rate: Rs.${ratePerGram.toInt()}/gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Weight: ${weightGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Wastage: ${wastageGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Text('Net Weight: ${netWeightGm.toStringAsFixed(3)} gm',
-              style: const pw.TextStyle(fontSize: 14)),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('J Amount:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${jAmount.round()}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Making Charges:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${makingCharges.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Sub Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.Text('Rs.${currentAmountBeforeGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('CGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${currentCgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('SGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
-              pw.Text('Rs.${currentSgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
-            ],
-          ),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('Item Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-              pw.Text('Rs.${currentTotalWithGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-            ],
-          ),
-          pw.SizedBox(height: 8),
-        ]);
-      }
-      
-      return widgets;
-    }
-
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat(80 * PdfPageFormat.mm, double.infinity),
-        build: (context) {
-          return pw.Padding(
-            padding: const pw.EdgeInsets.all(10),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                pw.Center(
-                  child: pw.Text('ESTIMATE',
-                      style: pw.TextStyle(
-                          fontSize: 21, fontWeight: pw.FontWeight.bold)),
-                ),
-                pw.SizedBox(height: 5),
-                pw.Center(
-                  child: pw.Text(
-                      DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now()),
-                      style: const pw.TextStyle(fontSize: 15)),
-                ),
-                pw.Divider(),
-                if (billNumberController.text.isNotEmpty)
-                  pw.Text('Bill No: ${billNumberController.text}',
-                      style: const pw.TextStyle(fontSize: 16)),
-                if (customerAccController.text.isNotEmpty)
-                  pw.Text('Acc No: ${customerAccController.text}',
-                      style: const pw.TextStyle(fontSize: 16)),
-                if (customerNameController.text.isNotEmpty)
-                  pw.Text('Name: ${customerNameController.text}',
-                      style: const pw.TextStyle(fontSize: 16)),
-                if (addressController.text.isNotEmpty)
-                  pw.Text('Address: ${addressController.text}',
-                      style: const pw.TextStyle(fontSize: 16)),
-                if (mobileNumberController.text.isNotEmpty)
-                  pw.Text('Mobile: ${mobileNumberController.text}',
-                      style: const pw.TextStyle(fontSize: 16)),
-                pw.Divider(),
-                pw.Text('ITEM DETAILS (${items.length + (weightGm > 0 ? 1 : 0)} items)',
-                    style: pw.TextStyle(
-                        fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 8),
-                ..._buildItemWidgets(),
-                pw.Divider(),
-                pw.Text('AMOUNT SUMMARY',
-                    style: pw.TextStyle(
-                        fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('Subtotal:',
-                        style: pw.TextStyle(
-                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Rs.${amountBeforeGst.round()}',
-                        style: pw.TextStyle(
-                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  ],
-                ),
-                if (actualDiscountAmount > 0) ...[
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('Discount:',
-                          style: const pw.TextStyle(fontSize: 16)),
-                      pw.Text('Rs.${actualDiscountAmount.toStringAsFixed(2)}',
-                          style: const pw.TextStyle(fontSize: 16)),
-                    ],
-                  ),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('After Discount:',
-                          style: pw.TextStyle(
-                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Rs.${amountAfterDiscount.toStringAsFixed(2)}',
-                          style: pw.TextStyle(
-                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                    ],
-                  ),
+    await Printing.layoutPdf(
+      onLayout: (format) async {
+        final pdf = pw.Document();
+        
+        // Build list of item widgets for PDF
+        List<pw.Widget> buildItemWidgets() {
+          List<pw.Widget> widgets = [];
+          
+          // Add saved items
+          for (int i = 0; i < items.length; i++) {
+            final item = items[i];
+            widgets.addAll([
+              pw.Text('Item ${i + 1}: ${item.type}',
+                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Rate: Rs.${item.ratePerGram.toInt()}/gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Weight: ${item.weightGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Wastage: ${item.wastageGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('J Amount:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${item.jAmount.round()}', style: const pw.TextStyle(fontSize: 14)),
                 ],
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('CGST 1.5%:',
-                        style: const pw.TextStyle(fontSize: 16)),
-                    pw.Text('Rs.${cgstAmount.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 16)),
-                  ],
-                ),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('SGST 1.5%:',
-                        style: const pw.TextStyle(fontSize: 16)),
-                    pw.Text('Rs.${sgstAmount.toStringAsFixed(2)}',
-                        style: const pw.TextStyle(fontSize: 16)),
-                  ],
-                ),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('Overall Total:',
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Making Charges:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${item.makingCharges.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Sub Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Rs.${item.itemTotal.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('CGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${item.cgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('SGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${item.sgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Item Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Rs.${item.itemTotalWithGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 8),
+            ]);
+          }
+          
+          // Add current item if any weight entered
+          if (weightGm > 0) {
+            final itemNum = items.length + 1;
+            final currentAmountBeforeGst = jAmount + makingCharges;
+            final currentCgst = currentAmountBeforeGst * kGstRate;
+            final currentSgst = currentAmountBeforeGst * kGstRate;
+            final currentTotalWithGst = currentAmountBeforeGst + currentCgst + currentSgst;
+            widgets.addAll([
+              pw.Text('Item $itemNum: $selectedType',
+                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Rate: Rs.${ratePerGram.toInt()}/gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Weight: ${weightGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Wastage: ${wastageGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Text('Net Weight: ${netWeightGm.toStringAsFixed(3)} gm',
+                  style: const pw.TextStyle(fontSize: 14)),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('J Amount:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${jAmount.round()}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Making Charges:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${makingCharges.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Sub Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Rs.${currentAmountBeforeGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('CGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${currentCgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('SGST 1.5%:', style: const pw.TextStyle(fontSize: 14)),
+                  pw.Text('Rs.${currentSgst.toStringAsFixed(2)}', style: const pw.TextStyle(fontSize: 14)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Item Total:', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('Rs.${currentTotalWithGst.round()}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+              pw.SizedBox(height: 8),
+            ]);
+          }
+          
+          return widgets;
+        }
+
+        pdf.addPage(
+          pw.Page(
+            pageFormat: format.copyWith(
+              width: 80 * PdfPageFormat.mm,
+              marginLeft: 10,
+              marginTop: 10,
+              marginRight: 10,
+              marginBottom: 10,
+            ),
+            build: (context) {
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Center(
+                    child: pw.Text('ESTIMATE',
                         style: pw.TextStyle(
-                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Rs.${(amountAfterDiscount + cgstAmount + sgstAmount).round()}',
-                        style: pw.TextStyle(
-                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  ],
-                ),
-                if (totalExchangeValue > 0) ...[
+                            fontSize: 21, fontWeight: pw.FontWeight.bold)),
+                  ),
+                  pw.SizedBox(height: 5),
+                  pw.Center(
+                    child: pw.Text(
+                        DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now()),
+                        style: const pw.TextStyle(fontSize: 15)),
+                  ),
                   pw.Divider(),
-                  pw.Text('EXCHANGE ($totalExchangeCount items)',
+                  if (billNumberController.text.isNotEmpty)
+                    pw.Text('Bill No: ${billNumberController.text}',
+                        style: const pw.TextStyle(fontSize: 16)),
+                  if (customerAccController.text.isNotEmpty)
+                    pw.Text('Acc No: ${customerAccController.text}',
+                        style: const pw.TextStyle(fontSize: 16)),
+                  if (customerNameController.text.isNotEmpty)
+                    pw.Text('Name: ${customerNameController.text}',
+                        style: const pw.TextStyle(fontSize: 16)),
+                  if (addressController.text.isNotEmpty)
+                    pw.Text('Address: ${addressController.text}',
+                        style: const pw.TextStyle(fontSize: 16)),
+                  if (mobileNumberController.text.isNotEmpty)
+                    pw.Text('Mobile: ${mobileNumberController.text}',
+                        style: const pw.TextStyle(fontSize: 16)),
+                  pw.Divider(),
+                  pw.Text('ITEM DETAILS (${items.length + (weightGm > 0 ? 1 : 0)} items)',
                       style: pw.TextStyle(
                           fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  // Add saved exchange items
-                  ...exchangeItems.map((item) => pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  pw.SizedBox(height: 8),
+                  ...buildItemWidgets(),
+                  pw.Divider(),
+                  pw.Text('AMOUNT SUMMARY',
+                      style: pw.TextStyle(
+                          fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.SizedBox(height: 4),
-                      pw.Text('${item.type}',
-                          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('${item.weightGm.toStringAsFixed(3)} gm @ Rs.${item.ratePerGram.toInt()}/gm',
-                          style: const pw.TextStyle(fontSize: 12)),
-                      if (item.wastageDeductionGm > 0)
-                        pw.Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)} gm',
+                      pw.Text('Subtotal:',
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Rs.${amountBeforeGst.round()}',
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                  if (actualDiscountAmount > 0) ...[
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Discount:',
+                            style: const pw.TextStyle(fontSize: 16)),
+                        pw.Text('Rs.${actualDiscountAmount.toStringAsFixed(2)}',
+                            style: const pw.TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('After Discount:',
+                            style: pw.TextStyle(
+                                fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Rs.${amountAfterDiscount.toStringAsFixed(2)}',
+                            style: pw.TextStyle(
+                                fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('CGST 1.5%:',
+                          style: const pw.TextStyle(fontSize: 16)),
+                      pw.Text('Rs.${cgstAmount.toStringAsFixed(2)}',
+                          style: const pw.TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('SGST 1.5%:',
+                          style: const pw.TextStyle(fontSize: 16)),
+                      pw.Text('Rs.${sgstAmount.toStringAsFixed(2)}',
+                          style: const pw.TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Overall Total:',
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Rs.${(amountAfterDiscount + cgstAmount + sgstAmount).round()}',
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                  if (totalExchangeValue > 0) ...[
+                    pw.Divider(),
+                    pw.Text('EXCHANGE ($totalExchangeCount items)',
+                        style: pw.TextStyle(
+                            fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    // Add saved exchange items
+                    ...exchangeItems.map((item) => pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.SizedBox(height: 4),
+                        pw.Text('${item.type}',
+                            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('${item.weightGm.toStringAsFixed(3)} gm @ Rs.${item.ratePerGram.toInt()}/gm',
                             style: const pw.TextStyle(fontSize: 12)),
-                      if (item.wastageDeductionGm > 0)
-                        pw.Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)} gm',
+                        if (item.wastageDeductionGm > 0)
+                          pw.Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)} gm',
+                              style: const pw.TextStyle(fontSize: 12)),
+                        if (item.wastageDeductionGm > 0)
+                          pw.Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)} gm',
+                              style: const pw.TextStyle(fontSize: 12)),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text('Value:',
+                                style: const pw.TextStyle(fontSize: 14)),
+                            pw.Text('- Rs.${item.value.round()}',
+                                style: const pw.TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ],
+                    )),
+                    // Add current exchange item if any weight entered
+                    if (exchangeWeight > 0) ...[
+                      pw.SizedBox(height: 4),
+                      pw.Text('$exchangeType',
+                          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('${exchangeWeight.toStringAsFixed(3)} gm @ Rs.${exchangeRate.toInt()}/gm',
+                          style: const pw.TextStyle(fontSize: 12)),
+                      if (exchangeWastageDeduction > 0)
+                        pw.Text('Wastage Deduction: ${exchangeWastageDeduction.toStringAsFixed(3)} gm',
+                            style: const pw.TextStyle(fontSize: 12)),
+                      if (exchangeWastageDeduction > 0)
+                        pw.Text('Net Weight: ${currentExchangeNetWeight.toStringAsFixed(3)} gm',
                             style: const pw.TextStyle(fontSize: 12)),
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
                           pw.Text('Value:',
                               style: const pw.TextStyle(fontSize: 14)),
-                          pw.Text('- Rs.${item.value.round()}',
+                          pw.Text('- Rs.${currentExchangeValue.round()}',
                               style: const pw.TextStyle(fontSize: 14)),
                         ],
                       ),
                     ],
-                  )),
-                  // Add current exchange item if any weight entered
-                  if (exchangeWeight > 0) ...[
-                    pw.SizedBox(height: 4),
-                    pw.Text('$exchangeType',
-                        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('${exchangeWeight.toStringAsFixed(3)} gm @ Rs.${exchangeRate.toInt()}/gm',
-                        style: const pw.TextStyle(fontSize: 12)),
-                    if (exchangeWastageDeduction > 0)
-                      pw.Text('Wastage Deduction: ${exchangeWastageDeduction.toStringAsFixed(3)} gm',
-                          style: const pw.TextStyle(fontSize: 12)),
-                    if (exchangeWastageDeduction > 0)
-                      pw.Text('Net Weight: ${currentExchangeNetWeight.toStringAsFixed(3)} gm',
-                          style: const pw.TextStyle(fontSize: 12)),
+                    pw.SizedBox(height: 8),
                     pw.Row(
                       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Text('Value:',
-                            style: const pw.TextStyle(fontSize: 14)),
-                        pw.Text('- Rs.${currentExchangeValue.round()}',
-                            style: const pw.TextStyle(fontSize: 14)),
+                        pw.Text('Total Exchange:',
+                            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('- Rs.${totalExchangeValue.round()}',
+                            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
                       ],
                     ),
                   ],
-                  pw.SizedBox(height: 8),
+                  pw.Divider(),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('Total Exchange:',
-                          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('- Rs.${totalExchangeValue.round()}',
-                          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(totalExchangeValue > 0 ? 'Net Payable:' : 'T.Amount:',
+                          style: pw.TextStyle(
+                              fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Rs.${finalAmount.round()}',
+                          style: pw.TextStyle(
+                              fontSize: 20, fontWeight: pw.FontWeight.bold)),
                     ],
                   ),
                 ],
-                pw.Divider(),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(totalExchangeValue > 0 ? 'Net Payable:' : 'T.Amount:',
-                        style: pw.TextStyle(
-                            fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Rs.${finalAmount.round()}',
-                        style: pw.TextStyle(
-                            fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+              );
+            },
+          ),
+        );
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
+        return pdf.save();
+      },
     );
   }
 
@@ -937,7 +953,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -1005,6 +1020,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       return const SizedBox.shrink();
     }
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -1016,13 +1034,16 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               children: [
                 Text(
                   'Added Items (${items.length})',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Total: ₹${itemsTotalWithGst.round()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    fontSize: 16,
+                    color: successColor,
                   ),
                 ),
               ],
@@ -1036,7 +1057,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 final item = items[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: Colors.grey.shade100,
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
@@ -1063,7 +1084,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                         const SizedBox(height: 4),
                         Text(
                           'Item Total: ₹${item.itemTotalWithGst.round()}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: successColor),
                         ),
                       ],
                     ),
@@ -1187,6 +1208,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               children: [
                 Expanded(
                   child: TextField(
+                    key: const Key('item_weight_field'),
                     controller: weightController,
                     decoration: const InputDecoration(
                       labelText: 'Weight (gm)',
@@ -1211,6 +1233,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
+                    key: const Key('item_wastage_field'),
                     controller: wastageController,
                     decoration: InputDecoration(
                       labelText: 'Wastage (gm)',
@@ -1588,6 +1611,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 Expanded(
                   flex: 1,
                   child: TextField(
+                    key: const Key('exchange_weight_field'),
                     controller: exchangeWeightController,
                     decoration: const InputDecoration(
                       labelText: 'Weight (gm)',
@@ -1719,6 +1743,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     color: Colors.orange.shade50,
+                    elevation: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
@@ -1730,17 +1755,20 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                               children: [
                                 Text(
                                   '${index + 1}. ${item.type}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                                 ),
+                                const SizedBox(height: 4),
                                 Text('${item.weightGm.toStringAsFixed(3)}gm @ ₹${item.ratePerGram.toInt()}/gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Wastage Deduction: ${item.wastageDeductionGm.toStringAsFixed(3)}gm'),
                                 if (item.wastageDeductionGm > 0)
                                   Text('Net Weight: ${item.netWeightGm.toStringAsFixed(3)}gm'),
+                                const SizedBox(height: 4),
                                 Text(
                                   'Value: - ₹${item.value.round()}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
+                                    fontSize: 15,
                                     color: Colors.orange,
                                   ),
                                 ),
@@ -1768,8 +1796,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   Widget _buildFinalAmountSection() {
     final totalItemsCount = items.length + (weightGm > 0 ? 1 : 0);
     final amountWithGst = amountAfterDiscount + cgstAmount + sgstAmount;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final successColor = ThemeService.getSuccessColor(themeProvider.currentTheme);
+    
     return Card(
-      color: Colors.green.shade50,
+      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -1810,10 +1841,10 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 Text(totalExchangeValue > 0 ? '💰 Net Payable:' : '💰 Amount Incl. GST:',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('₹${finalAmount.round()}',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green)),
+                        color: successColor)),
               ],
             ),
           ],
@@ -1908,6 +1939,46 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 controller: silverMcController,
                 onChanged: (value) {
                   silverMcPerGm = double.tryParse(value) ?? 0.0;
+                },
+              ),
+              const Divider(),
+              const Text('App Theme',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Consumer<ThemeProvider>(
+                builder: (builderContext, themeProvider, child) {
+                  return DropdownButtonFormField<AppTheme>(
+                    value: themeProvider.currentTheme,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        ThemeService.getThemeIcon(themeProvider.currentTheme),
+                        color: Theme.of(builderContext).colorScheme.primary,
+                      ),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: AppTheme.values.map((theme) {
+                      return DropdownMenuItem<AppTheme>(
+                        value: theme,
+                        child: Row(
+                          children: [
+                            Icon(
+                              ThemeService.getThemeIcon(theme),
+                              size: 20,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(ThemeService.getThemeName(theme)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (AppTheme? theme) {
+                      if (theme != null) {
+                        themeProvider.setTheme(theme);
+                      }
+                    },
+                  );
                 },
               ),
             ],
