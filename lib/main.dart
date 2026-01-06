@@ -562,6 +562,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
 
   double get minMakingCharge => isGold ? 250.0 : 200.0;
 
+  /// Format wastage percentage for display
+  String _formatWastagePercentage(double percentage) {
+    return percentage > 0 ? percentage.toStringAsFixed(2) : '';
+  }
+
   /// Helper method to update wastage weight from wastage percentage
   void _updateWastageFromPercentage() {
     wastageGm = weightGm * wastagePercentage / 100;
@@ -572,9 +577,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   void _updateWastagePercentageFromWeight() {
     if (weightGm > 0) {
       wastagePercentage = (wastageGm / weightGm) * 100;
-      wastagePercentageController.text = wastagePercentage > 0 
-          ? wastagePercentage.toStringAsFixed(2) 
-          : '';
+      wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
     }
   }
 
@@ -1209,9 +1212,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                   wastagePercentage = isGold
                       ? goldWastagePercentage
                       : silverWastagePercentage;
-                  wastagePercentageController.text = wastagePercentage > 0 
-                      ? wastagePercentage.toStringAsFixed(2)
-                      : '';
+                  wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
                   _updateWastageFromPercentage();
                   makingCharges = _calculateMakingCharges();
                 });
