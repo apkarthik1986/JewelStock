@@ -152,6 +152,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     'Gold 22K/916': 0.0,
     'Gold 20K/833': 0.0,
     'Gold 18K/750': 0.0,
+    'Gold Coin 24K/999': 0.0,
     'Silver': 0.0,
   };
 
@@ -233,6 +234,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       metalRates['Gold 22K/916'] = prefs.getDouble('rate_gold_22k') ?? 0.0;
       metalRates['Gold 20K/833'] = prefs.getDouble('rate_gold_20k') ?? 0.0;
       metalRates['Gold 18K/750'] = prefs.getDouble('rate_gold_18k') ?? 0.0;
+      metalRates['Gold Coin 24K/999'] = prefs.getDouble('rate_gold_coin_24k') ?? 0.0;
       metalRates['Silver'] = prefs.getDouble('rate_silver') ?? 0.0;
       goldWastagePercentage = prefs.getDouble('gold_wastage') ?? 0.0;
       silverWastagePercentage = prefs.getDouble('silver_wastage') ?? 0.0;
@@ -268,6 +270,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     await prefs.setDouble('rate_gold_22k', metalRates['Gold 22K/916']!);
     await prefs.setDouble('rate_gold_20k', metalRates['Gold 20K/833']!);
     await prefs.setDouble('rate_gold_18k', metalRates['Gold 18K/750']!);
+    await prefs.setDouble('rate_gold_coin_24k', metalRates['Gold Coin 24K/999']!);
     await prefs.setDouble('rate_silver', metalRates['Silver']!);
     await prefs.setDouble('gold_wastage', goldWastagePercentage);
     await prefs.setDouble('silver_wastage', silverWastagePercentage);
@@ -413,6 +416,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
         'Gold 22K/916': 0.0,
         'Gold 20K/833': 0.0,
         'Gold 18K/750': 0.0,
+        'Gold Coin 24K/999': 0.0,
         'Silver': 0.0,
       };
       goldWastagePercentage = 0.0;
@@ -433,6 +437,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     await prefs.setDouble('rate_gold_22k', 0.0);
     await prefs.setDouble('rate_gold_20k', 0.0);
     await prefs.setDouble('rate_gold_18k', 0.0);
+    await prefs.setDouble('rate_gold_coin_24k', 0.0);
     await prefs.setDouble('rate_silver', 0.0);
     await prefs.setDouble('gold_wastage', 0.0);
     await prefs.setDouble('silver_wastage', 0.0);
