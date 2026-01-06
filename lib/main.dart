@@ -1923,9 +1923,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                       keyboardType: const TextInputType.numberWithOptions(decimal: false),
                       controller: metalRateControllers[type],
                       onChanged: (value) {
-                        // Parse as integer, then convert to double for storage
-                        final intValue = int.tryParse(value);
-                        metalRates[type] = intValue != null ? intValue.toDouble() : 0.0;
+                        setState(() {
+                          // Parse as integer, then convert to double for storage
+                          final intValue = int.tryParse(value);
+                          metalRates[type] = intValue != null ? intValue.toDouble() : 0.0;
+                        });
                       },
                     ),
                   )),
@@ -1941,7 +1943,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 keyboardType: TextInputType.number,
                 controller: goldWastageController,
                 onChanged: (value) {
-                  goldWastagePercentage = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    goldWastagePercentage = double.tryParse(value) ?? 0.0;
+                  });
                 },
               ),
               const SizedBox(height: 12),
@@ -1953,7 +1957,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 keyboardType: TextInputType.number,
                 controller: silverWastageController,
                 onChanged: (value) {
-                  silverWastagePercentage = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    silverWastagePercentage = double.tryParse(value) ?? 0.0;
+                  });
                 },
               ),
               const Divider(),
@@ -1969,7 +1975,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 keyboardType: TextInputType.number,
                 controller: goldMcController,
                 onChanged: (value) {
-                  goldMcPerGm = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    goldMcPerGm = double.tryParse(value) ?? 0.0;
+                  });
                 },
               ),
               const SizedBox(height: 12),
@@ -1981,7 +1989,9 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                 keyboardType: TextInputType.number,
                 controller: silverMcController,
                 onChanged: (value) {
-                  silverMcPerGm = double.tryParse(value) ?? 0.0;
+                  setState(() {
+                    silverMcPerGm = double.tryParse(value) ?? 0.0;
+                  });
                 },
               ),
               const Divider(),
