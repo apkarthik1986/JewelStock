@@ -152,7 +152,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     'Gold 22K/916': 0.0,
     'Gold 20K/833': 0.0,
     'Gold 18K/750': 0.0,
-    'Gold Coin 24K/999': 0.0,
     'Silver': 0.0,
   };
 
@@ -168,6 +167,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   final TextEditingController addressController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
+  final TextEditingController wastagePercentageController = TextEditingController();
   final TextEditingController wastageController = TextEditingController();
   final TextEditingController makingChargesController = TextEditingController();
   
@@ -183,6 +183,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
 
   String selectedType = 'Gold 22K/916';
   double weightGm = 0.0;
+  double wastagePercentage = 0.0;
   double wastageGm = 0.0;
   double makingCharges = 0.0;
   String mcType = 'Rupees';
@@ -234,7 +235,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       metalRates['Gold 22K/916'] = prefs.getDouble('rate_gold_22k') ?? 0.0;
       metalRates['Gold 20K/833'] = prefs.getDouble('rate_gold_20k') ?? 0.0;
       metalRates['Gold 18K/750'] = prefs.getDouble('rate_gold_18k') ?? 0.0;
-      metalRates['Gold Coin 24K/999'] = prefs.getDouble('rate_gold_coin_24k') ?? 0.0;
       metalRates['Silver'] = prefs.getDouble('rate_silver') ?? 0.0;
       goldWastagePercentage = prefs.getDouble('gold_wastage') ?? 0.0;
       silverWastagePercentage = prefs.getDouble('silver_wastage') ?? 0.0;
@@ -270,7 +270,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     await prefs.setDouble('rate_gold_22k', metalRates['Gold 22K/916']!);
     await prefs.setDouble('rate_gold_20k', metalRates['Gold 20K/833']!);
     await prefs.setDouble('rate_gold_18k', metalRates['Gold 18K/750']!);
-    await prefs.setDouble('rate_gold_coin_24k', metalRates['Gold Coin 24K/999']!);
     await prefs.setDouble('rate_silver', metalRates['Silver']!);
     await prefs.setDouble('gold_wastage', goldWastagePercentage);
     await prefs.setDouble('silver_wastage', silverWastagePercentage);
@@ -292,6 +291,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     // Save current item input state
     await prefs.setString('form_selected_type', selectedType);
     await prefs.setDouble('form_weight', weightGm);
+    await prefs.setDouble('form_wastage_percentage', wastagePercentage);
     await prefs.setDouble('form_wastage', wastageGm);
     await prefs.setDouble('form_making_charges', makingCharges);
     await prefs.setString('form_mc_type', mcType);
@@ -331,6 +331,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       // Load current item input state
       selectedType = prefs.getString('form_selected_type') ?? 'Gold 22K/916';
       weightGm = prefs.getDouble('form_weight') ?? 0.0;
+      wastagePercentage = prefs.getDouble('form_wastage_percentage') ?? 0.0;
       wastageGm = prefs.getDouble('form_wastage') ?? 0.0;
       makingCharges = prefs.getDouble('form_making_charges') ?? 0.0;
       mcType = prefs.getString('form_mc_type') ?? 'Rupees';
@@ -338,6 +339,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
 
       // Update controllers
       weightController.text = weightGm > 0 ? weightGm.toString() : '';
+      wastagePercentageController.text = wastagePercentage > 0 ? wastagePercentage.toString() : '';
       wastageController.text = wastageGm > 0 ? wastageGm.toStringAsFixed(3) : '';
       makingChargesController.text = makingCharges > 0 ? makingCharges.toString() : '';
 
@@ -383,6 +385,7 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     await prefs.remove('form_mobile');
     await prefs.remove('form_selected_type');
     await prefs.remove('form_weight');
+    await prefs.remove('form_wastage_percentage');
     await prefs.remove('form_wastage');
     await prefs.remove('form_making_charges');
     await prefs.remove('form_mc_type');
@@ -416,7 +419,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
         'Gold 22K/916': 0.0,
         'Gold 20K/833': 0.0,
         'Gold 18K/750': 0.0,
-        'Gold Coin 24K/999': 0.0,
         'Silver': 0.0,
       };
       goldWastagePercentage = 0.0;
@@ -437,7 +439,6 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
     await prefs.setDouble('rate_gold_22k', 0.0);
     await prefs.setDouble('rate_gold_20k', 0.0);
     await prefs.setDouble('rate_gold_18k', 0.0);
-    await prefs.setDouble('rate_gold_coin_24k', 0.0);
     await prefs.setDouble('rate_silver', 0.0);
     await prefs.setDouble('gold_wastage', 0.0);
     await prefs.setDouble('silver_wastage', 0.0);
@@ -453,11 +454,13 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       addressController.clear();
       mobileNumberController.clear();
       weightController.clear();
+      wastagePercentageController.clear();
       wastageController.clear();
       makingChargesController.clear();
       exchangeWeightController.clear();
       exchangeWastageController.clear();
       weightGm = 0.0;
+      wastagePercentage = 0.0;
       wastageGm = 0.0;
       makingCharges = 0.0;
       mcPercentage = 0.0;
@@ -477,9 +480,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   void _resetCurrentItemInputs() {
     setState(() {
       weightController.clear();
+      wastagePercentageController.clear();
       wastageController.clear();
       makingChargesController.clear();
       weightGm = 0.0;
+      wastagePercentage = 0.0;
       wastageGm = 0.0;
       makingCharges = 0.0;
       mcPercentage = 0.0;
@@ -556,6 +561,25 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
   bool get isGold => selectedType.contains('Gold');
 
   double get minMakingCharge => isGold ? 250.0 : 200.0;
+
+  /// Format wastage percentage for display
+  String _formatWastagePercentage(double percentage) {
+    return percentage > 0 ? percentage.toStringAsFixed(2) : '';
+  }
+
+  /// Helper method to update wastage weight from wastage percentage
+  void _updateWastageFromPercentage() {
+    wastageGm = weightGm * wastagePercentage / 100;
+    wastageController.text = wastageGm > 0 ? wastageGm.toStringAsFixed(3) : '';
+  }
+
+  /// Helper method to update wastage percentage from wastage weight
+  void _updateWastagePercentageFromWeight() {
+    if (weightGm > 0) {
+      wastagePercentage = (wastageGm / weightGm) * 100;
+      wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
+    }
+  }
 
   double _calculateMakingCharges() {
     if (mcType == 'Rupees') {
@@ -1185,12 +1209,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
               onChanged: (value) {
                 setState(() {
                   selectedType = value!;
-                  wastageGm = weightGm *
-                      (isGold
-                          ? goldWastagePercentage
-                          : silverWastagePercentage) /
-                      100;
-                  wastageController.text = wastageGm.toStringAsFixed(3);
+                  wastagePercentage = isGold
+                      ? goldWastagePercentage
+                      : silverWastagePercentage;
+                  wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
+                  _updateWastageFromPercentage();
                   makingCharges = _calculateMakingCharges();
                 });
                 _debouncedSaveFormState();
@@ -1223,35 +1246,46 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
                     onChanged: (value) {
                       setState(() {
                         weightGm = double.tryParse(value) ?? 0.0;
-                        wastageGm = weightGm *
-                            (isGold
-                                ? goldWastagePercentage
-                                : silverWastagePercentage) /
-                            100;
-                        wastageController.text = wastageGm.toStringAsFixed(3);
+                        _updateWastageFromPercentage();
                         makingCharges = _calculateMakingCharges();
                       });
                       _debouncedSaveFormState();
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    key: const Key('item_wastage_percentage_field'),
+                    controller: wastagePercentageController,
+                    decoration: const InputDecoration(
+                      labelText: 'Wastage (%)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      setState(() {
+                        wastagePercentage = double.tryParse(value) ?? 0.0;
+                        _updateWastageFromPercentage();
+                      });
+                      _debouncedSaveFormState();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     key: const Key('item_wastage_field'),
                     controller: wastageController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Wastage (gm)',
-                      border: const OutlineInputBorder(),
-                      hintText: wastageGm.toStringAsFixed(3),
-                      helperText: wastageGm > 0 && weightGm > 0
-                          ? '${((wastageGm / weightGm) * 100).toStringAsFixed(2)}% of weight'
-                          : null,
+                      border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
                       setState(() {
                         wastageGm = double.tryParse(value) ?? 0.0;
+                        _updateWastagePercentageFromWeight();
                       });
                       _debouncedSaveFormState();
                     },
