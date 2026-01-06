@@ -241,6 +241,10 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
       goldMcPerGm = prefs.getDouble('gold_mc') ?? 0.0;
       silverMcPerGm = prefs.getDouble('silver_mc') ?? 0.0;
 
+      // Update wastagePercentage based on current selectedType
+      wastagePercentage = isGold ? goldWastagePercentage : silverWastagePercentage;
+      wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
+
       // Update controllers with loaded values
       _updateSettingsControllers();
     });
@@ -2039,7 +2043,11 @@ class _JewelCalcHomeState extends State<JewelCalcHome> {
             onPressed: () async {
               await _saveBaseValues();
               Navigator.of(dialogContext).pop();
-              setState(() {});
+              setState(() {
+                // Update wastagePercentage based on current selectedType
+                wastagePercentage = isGold ? goldWastagePercentage : silverWastagePercentage;
+                wastagePercentageController.text = _formatWastagePercentage(wastagePercentage);
+              });
               ScaffoldMessenger.of(scaffoldContext).showSnackBar(
                 const SnackBar(
                   content: Text('Settings saved successfully!'),
