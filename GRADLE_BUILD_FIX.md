@@ -12,11 +12,9 @@ Received status code 403 from server: Forbidden
 
 The build failure was caused by:
 
-1. **Version Mismatch**: The `android/build.gradle` file was using outdated versions:
-   - Android Gradle Plugin: 7.2.0 (old) vs 8.1.0 in `settings.gradle`
-   - Kotlin: 1.7.10 (old) vs 1.9.10 in `settings.gradle`
+1. **Version Mismatch**: The `android/build.gradle` file was using outdated versions (AGP 7.2.0, Kotlin 1.7.10) that didn't align with the modern plugin versions declared in `settings.gradle` (AGP 8.1.0, Kotlin 1.9.10). This mismatch caused Gradle to use outdated dependency resolution mechanisms.
 
-2. **Repository Resolution Conflict**: Both `build.gradle` and `settings.gradle` were declaring repositories, potentially causing conflicts in dependency resolution.
+2. **Repository Resolution Conflict**: Both `build.gradle` and `settings.gradle` were declaring repositories without centralized management, potentially causing conflicts in dependency resolution and leading to Maven Central access issues.
 
 ## Solution Applied
 
